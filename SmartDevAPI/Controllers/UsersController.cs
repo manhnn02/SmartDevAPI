@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Services;
 using Services.Helpers;
 using Services.Models;
@@ -10,15 +12,32 @@ namespace SmartDevAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserServices _userServices;
+        private IConfiguration _configuration;
 
-        public UsersController(IUserServices userServices)
+        public UsersController(IUserServices userServices, IConfiguration configuration)
         {
             this._userServices = userServices;
+            _configuration = configuration;
         }
+
+        [HttpPost("Login")]
+        public ActionResult Login(LoginModel model) {
+            try
+            {
+                string secretKey = _configuration.GetValue<string>("AppSettings:SecretKey"); 
+                return Ok(_userServices.Login(model, secretKey));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
 
         // GET: api/Users
         [HttpGet]
-        public ActionResult<APIResponse> GetAll()
+        [Authorize]
+        public ActionResult GetAll()
         {
             try
             {

@@ -10,4 +10,6 @@ public interface IUserServices
     APIResponse UpdateUser(UserVM user);
     APIResponse DeleteUser(long uID);
     bool UserExists(long id, string email);
+
+    APIResponse Login(LoginModel model, string secretKey);
 }

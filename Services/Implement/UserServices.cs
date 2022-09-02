@@ -1,8 +1,11 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AutoMapper;
 using DAL;
 using DAL.Implement;
 using DAL.Models;
+using Microsoft.IdentityModel.Tokens;
 using Services.Helpers;
 using Services.Models;
 
@@ -142,6 +145,20 @@ namespace Services.Implement
         public bool UserExists(long id, string email)
         {
             return _userRepository.UserExists(id, email);
+        }
+
+        public APIResponse Login(LoginModel model, string secretKey)
+        {
+            string USER_PASS = CommonFunctions.MD5Hash(model.Password);
+            var user = _userRepository.Login(model.UserName, USER_PASS);
+
+            if (user != null)
+            {
+                return new APIResponse() { Success = true, Message = "Authenticate successful", Data = CommonFunctions.GenerateToken(user, secretKey) };
+            }
+
+            else
+                return new APIResponse() { Success = false, Message = "No result or Invalid username/passworh" };
         }
     }
 }

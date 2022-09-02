@@ -73,5 +73,13 @@ namespace DAL.Implement
         {
             return (_context.Users?.Any(e => e.UserId == id || e.UserEmail == email)).GetValueOrDefault();
         }
+
+        public User Login(string email, string password)
+        {
+            if (_context.Users != null)
+                return _context.Users.SingleOrDefault(x => x.UserEmail == email && x.UserPass == password);
+            else
+                return null;
+        }
     }
 }

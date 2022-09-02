@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using DAL.Models;
+using Microsoft.IdentityModel.Tokens;
 using Services.Models;
 
 namespace Services.Helpers
@@ -27,6 +30,31 @@ namespace Services.Helpers
             }
 
             return strBuilder.ToString();
+        }
+
+        public static string GenerateToken(User user, string secretKey)
+        {
+            var jwTokenHandler = new JwtSecurityTokenHandler();
+
+            var secretKeyBytes = System.Text.Encoding.UTF8.GetBytes(secretKey);
+
+            var tokenDescription = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(
+                        new[] {
+                            new Claim(ClaimTypes.Name, user.UserName),
+                            new Claim(ClaimTypes.Email, user.UserEmail),
+                            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                            new Claim("ID", user.UserId.ToString()),
+                            new Claim("TokenID", Guid.NewGuid().ToString())
+                        }
+                    ),
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha512Signature)
+            };
+
+            var token = jwTokenHandler.CreateToken(tokenDescription);
+            return jwTokenHandler.WriteToken(token);
         }
     }
 }

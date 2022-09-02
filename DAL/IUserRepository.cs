@@ -11,6 +11,6 @@ namespace DAL
         User UpdateUser(User user);
         bool DeleteUser(long uID);
         bool UserExists(long id, string email);
-
+        User Login(string email, string password);
     }
 }
