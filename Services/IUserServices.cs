@@ -4,10 +4,10 @@ using Services.Models;
 namespace Services;
 public interface IUserServices
 {
-    List<UserVM> GetAll();
-    UserVM GetUser(long uID);
-    UserVM AddUser(UserVM user);
-    UserVM UpdateUser(UserVM user);
-    bool DeleteUser(long uID);
+    APIResponse GetAll();
+    APIResponse GetUser(long uID);
+    APIResponse AddUser(UserVM user);
+    APIResponse UpdateUser(UserVM user);
+    APIResponse DeleteUser(long uID);
     bool UserExists(long id, string email);
 }

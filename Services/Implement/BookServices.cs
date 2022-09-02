@@ -19,39 +19,37 @@ namespace Services.Implement
             _bookRepository = bookRepository;
             this.mapper = mapper;
         }
-        public BookVM AddBook(BookVM book)
+        public APIResponse AddBook(BookVM book)
         {
             try
             {
                 var checkValid = ValidateInputs(book);
                 if (!checkValid)
-                    return new BookVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 //check existed
-                var existedBook = BookExists(book.UserId, book.BookName);
+                var existedBook = BookExists(book.USER_ID, book.BOOK_NAME);
                 if (existedBook)
-                    return new BookVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Existed" };
 
-                var added = _bookRepository.AddBook(book);
+                var added = _bookRepository.AddBook(mapper.Map<Book>(book));
                 if (added == null)
-                    return new BookVM() { ResponseCode = ResponseCode.Error };
+                    return new APIResponse() { Success = false, Message = "Internal error" };
 
-                BookVM response = mapper.Map<BookVM>(added);
-                response.ResponseCode = ResponseCode.Success;
-                return response;
+                return new APIResponse() { Success = true, Message = "Successful", Data = mapper.Map<BookVM>(added) };
             }
             catch (Exception ex)
             {
-                return new BookVM() { ResponseCode = ResponseCode.Error };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public List<BookVM> GetBookByName(long uID, string bookName)
+        public APIResponse GetBookByName(long uID, string bookName)
         {
             try
             {
                 if (uID <= 0 || String.IsNullOrEmpty(bookName))
-                    return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.BadRequest } };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 var books = _bookRepository.GetBookByName(uID, bookName);
 
@@ -61,25 +59,24 @@ namespace Services.Implement
                     foreach (var item in books)
                     {
                         var book = mapper.Map<BookVM>(item);
-                        book.ResponseCode = ResponseCode.Success;
                         response.Add(book);
                     }
-                    return response;
+                    return new APIResponse() { Success = true, Message = "Successful", Data = response };
                 }
                 else
-                    return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.BadRequest } };
+                    return new APIResponse() { Success = false, Message = "No result" };
             }
             catch (Exception ex) {
-                return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.Error } };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public List<BookVM> GetBooksByUserID(long uID, int? book_status)
+        public APIResponse GetBooksByUserID(long uID, int? book_status)
         {
             try
             {
                 if (uID <= 0)
-                    return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.BadRequest } };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 var books = _bookRepository.GetBooksByUserID(uID, book_status);
 
@@ -89,25 +86,23 @@ namespace Services.Implement
                     foreach (var item in books)
                     {
                         var book = mapper.Map<BookVM>(item);
-                        book.ResponseCode = ResponseCode.Success;
                         response.Add(book);
                     }
-
-                    return response;
+                    return new APIResponse() { Success = true, Message = "Successful", Data = response };
                 }
                 else
-                    return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.BadRequest } };
+                    return new APIResponse() { Success = false, Message = "No result" };
             }
             catch (Exception ex)
             {
-                return new List<BookVM>() { new BookVM() { ResponseCode = ResponseCode.Error } };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        private bool ValidateInputs(Book book)
+        private bool ValidateInputs(BookVM book)
         {
             //validate input
-            if (book == null || String.IsNullOrEmpty(book.BookName))
+            if (book == null || String.IsNullOrEmpty(book.BOOK_NAME))
                 return false;
 
             return true;

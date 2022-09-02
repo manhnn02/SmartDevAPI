@@ -8,7 +8,7 @@ using Services.Models;
 
 namespace Services.Implement
 {
-    public class UserServices:IUserServices
+    public class UserServices : IUserServices
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper mapper;
@@ -18,131 +18,122 @@ namespace Services.Implement
             _userRepository = userRepository;
             this.mapper = mapper;
         }
-        public UserVM AddUser(UserVM user)
+        public APIResponse AddUser(UserVM user)
         {
             try
             {
                 var checkValid = ValidateInputs(user);
                 if (!checkValid)
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 //check existed
-                var existedUser = UserExists(user.UserId, user.UserEmail);
+                var existedUser = UserExists(user.USER_ID, user.USER_EMAIL);
                 if (existedUser)
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Existed" };
 
-                user.UserPass = Services.Helpers.CommonFunctions.MD5Hash(user.UserPass);
+                user.USER_PASS = Services.Helpers.CommonFunctions.MD5Hash(user.USER_PASS);
 
-                var added = _userRepository.AddUser(user);
+                var added = _userRepository.AddUser(mapper.Map<User>(user));
                 if (added == null)
-                    return new UserVM() { ResponseCode = ResponseCode.Error };
+                    return new APIResponse() { Success = false, Message = "Internal error" };
 
-                UserVM response = mapper.Map<UserVM>(added);
-                response.ResponseCode = ResponseCode.Success;
-                return response;
+                return new APIResponse() { Success = true, Message = "Successful", Data = mapper.Map<UserVM>(added) };
             }
             catch (Exception ex)
             {
-                return new UserVM() { ResponseCode = ResponseCode.Error };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public bool DeleteUser(long uID)
+        public APIResponse DeleteUser(long uID)
         {
             try
             {
                 if (uID <= 0)
-                    return false;
-
-                return _userRepository.DeleteUser(uID);
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
+                return new APIResponse() { Success = true, Message = "Successful", Data = _userRepository.DeleteUser(uID) };
             }
             catch (Exception ex)
             {
-                return false;
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public List<UserVM> GetAll()
+        public APIResponse GetAll()
         {
             try
             {
                 var lstUsers = _userRepository.GetAll();
-                List<UserVM> response = new List<UserVM>();
                 if (lstUsers.Count > 0)
                 {
+                    List<UserVM> response = new List<UserVM>();
                     foreach (var item in lstUsers)
                     {
                         UserVM obj = mapper.Map<UserVM>(item);
-                        obj.ResponseCode = ResponseCode.Success;
-
                         response.Add(obj);
                     }
+                    return new APIResponse() { Success = true, Message = "Successful", Data = response };
                 }
-
-                return response;
+                else
+                    return new APIResponse() { Success = false, Message = "No result" };
             }
             catch (Exception ex)
             {
-                return new List<UserVM>() { new UserVM() { ResponseCode = ResponseCode.Error } };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public UserVM GetUser(long uID)
+        public APIResponse GetUser(long uID)
         {
             try
             {
                 if (uID <= 0)
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 var user = _userRepository.GetUser(uID);
 
                 if (user != null)
-                {
-                    var response = mapper.Map<UserVM>(user);
-                    response.ResponseCode = ResponseCode.Success;
-                    return response;
-                }
+                    return new APIResponse() { Success = true, Message = "Successful", Data = mapper.Map<UserVM>(user) };
+
                 else
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "No result" };
             }
             catch (Exception ex)
             {
-                return new UserVM() { ResponseCode = ResponseCode.Error };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        public UserVM UpdateUser(UserVM user)
+        public APIResponse UpdateUser(UserVM user)
         {
             try
             {
                 var checkValid = ValidateInputs(user);
                 if (!checkValid)
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Invalid input" };
 
                 //check existed
-                var existedUser = UserExists(user.UserId, user.UserEmail);
+                var existedUser = UserExists(user.USER_ID, user.USER_EMAIL);
                 if (!existedUser)
-                    return new UserVM() { ResponseCode = ResponseCode.BadRequest };
+                    return new APIResponse() { Success = false, Message = "Not existed" };
 
-                user.UserPass = Services.Helpers.CommonFunctions.MD5Hash(user.UserPass);
-                var updateRes = _userRepository.UpdateUser(user);
+                user.USER_PASS = Services.Helpers.CommonFunctions.MD5Hash(user.USER_PASS);
+                var updateRes = _userRepository.UpdateUser(mapper.Map<User>(user));
                 if (updateRes == null)
-                    return new UserVM() { ResponseCode = ResponseCode.Error };
+                    return new APIResponse() { Success = false, Message = "Internal error" };
 
-                var response = mapper.Map<UserVM>(updateRes);
-                response.ResponseCode = ResponseCode.Success;
-                return response;
+                return new APIResponse() { Success = true, Message = "Successful", Data = mapper.Map<UserVM>(updateRes) };
             }
             catch (Exception ex)
             {
-                return new UserVM() { ResponseCode = ResponseCode.Error };
+                return new APIResponse() { Success = false, Message = "Internal error" };
             }
         }
 
-        private bool ValidateInputs(User user)
+        private bool ValidateInputs(UserVM user)
         {
             //validate input
-            if (user == null || String.IsNullOrEmpty(user.UserName) || String.IsNullOrEmpty(user.UserEmail) || String.IsNullOrEmpty(user.UserPass))
+            if (user == null || String.IsNullOrEmpty(user.USER_NAME) || String.IsNullOrEmpty(user.USER_EMAIL) || String.IsNullOrEmpty(user.USER_PASS))
                 return false;
 
             return true;

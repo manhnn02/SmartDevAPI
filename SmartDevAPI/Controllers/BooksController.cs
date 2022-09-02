@@ -17,15 +17,11 @@ namespace SmartDevAPI.Controllers
         }
 
         [HttpGet("GetBooksByUserID")]
-        public ActionResult<List<BookVM>> GetBooksByUserID(long user_id, int? bookStatus)
+        public ActionResult<APIResponse> GetBooksByUserID(long user_id, int? bookStatus)
         {
             try
             {
-                List<BookVM> lstBooks = _bookServices.GetBooksByUserID(user_id, bookStatus);
-                if (lstBooks.Count > 0 && lstBooks[0].ResponseCode != ResponseCode.Success)
-                    return StatusCode((int)lstBooks[0].ResponseCode, lstBooks[0].ResponseCode);
-
-                return lstBooks;
+                return Ok(_bookServices.GetBooksByUserID(user_id, bookStatus));
             }
             catch
             {
@@ -34,15 +30,11 @@ namespace SmartDevAPI.Controllers
         }
 
         [HttpGet("SearchBookByName")]
-        public ActionResult<List<BookVM>> SearchBookByName(long user_id, string bookName)
+        public ActionResult<APIResponse> SearchBookByName(long user_id, string bookName)
         {
             try
             {
-                List<BookVM> lstBooks = _bookServices.GetBookByName(user_id, bookName);
-                if (lstBooks.Count > 0 && lstBooks[0].ResponseCode != ResponseCode.Success)
-                    return StatusCode((int)lstBooks[0].ResponseCode, lstBooks[0].ResponseCode);
-
-                return lstBooks;
+                return Ok(_bookServices.GetBookByName(user_id, bookName));
             }
             catch
             {
@@ -51,22 +43,18 @@ namespace SmartDevAPI.Controllers
         }
 
         [HttpGet("AddReadBook")]
-        public ActionResult<BookVM> AddReadBook(string bookName, string bookDescription, bool status, long userID)
+        public ActionResult<APIResponse> AddReadBook(string bookName, string bookDescription, bool status, long userID)
         {
             try
             {
                 BookVM book = new BookVM()
                 {
-                    BookName = bookName,
-                    BookDescription = bookDescription,
-                    Status = status,
-                    UserId = userID
+                    BOOK_NAME = bookName,
+                    BOOK_DES = bookDescription,
+                    STATUS = status,
+                    USER_ID = userID
                 };
-                BookVM resBook = _bookServices.AddBook(book);
-                if (resBook.ResponseCode != ResponseCode.Success)
-                    return StatusCode((int)resBook.ResponseCode, resBook.ResponseCode);
-
-                return resBook;
+                return Ok(_bookServices.AddBook(book));
             }
             catch
             {

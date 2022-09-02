@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services;
+using Services.Helpers;
 using Services.Models;
 
 namespace SmartDevAPI.Controllers
@@ -17,17 +18,13 @@ namespace SmartDevAPI.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public ActionResult<List<UserVM>> GetAll()
+        public ActionResult<APIResponse> GetAll()
         {
             try
             {
-                var lstUsers = _userServices.GetAll();
-                if (lstUsers.Count > 0 && lstUsers[0].ResponseCode != Services.Helpers.ResponseCode.Success)
-                    return StatusCode((int)lstUsers[0].ResponseCode, lstUsers[0].ResponseCode);
-
-                return lstUsers;
+                return Ok(_userServices.GetAll());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

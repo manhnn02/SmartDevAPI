@@ -3,7 +3,7 @@
 namespace Services;
 public interface IBookServices
 {
-    BookVM AddBook(BookVM book);
-    List<BookVM> GetBookByName(long uID, string bookName);
-    List<BookVM> GetBooksByUserID(long uID, int? book_status);
+    APIResponse AddBook(BookVM book);
+    APIResponse GetBookByName(long uID, string bookName);
+    APIResponse GetBooksByUserID(long uID, int? book_status);
 }
